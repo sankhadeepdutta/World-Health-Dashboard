@@ -14,33 +14,14 @@ choices = c("Asia",
             "Antarctica")
 
 
-setInput <- function(inputId, accessor = NULL) {
-  JS(paste0("x => Shiny.setInputValue('", inputId, "', x", accessor, ")"))
-}
-
+#' Initialize the Shiny module UI
+#'
+#' @param id The Shiny module ID
+#'
 #' @export
 ui <- function(id) {
   ns <- NS(id)
   div(
-    tags$head(tags$style(
-      HTML(
-        '.body {margin :8px;}
-        .controls {display: flex; justify-content: center; align-items: center; background: #fff; border-radius: 10px; padding-top: 0}
-        .level-1-plots {display: flex; flex-direction: row; background-color: transparent}
-        .level-1-plot1 {width: 45%; margin-top: 10px; margin-bottom: 10px; margin-right: 5px;}
-        .level-1-plot2 {width: 55%; margin-top: 10px; margin-bottom: 10px; margin-left: 5px;}
-           .control1 {margin-right: 15px}
-           .control2 {margin-left: 15px}
-        .plotly {height: 300px !important}
-        @media (max-width: 991px) {
-        .level-1-plots {
-        flex-direction: column;}
-        .level-1-plot1 {width: 100%; margin: 10px 0;}
-        .level-1-plot2 {width: 100%; margin: 0}
-        .level-2-plot {width: 100%; margin: 10px 0;}
-}'
-      )
-    )),
     div(
       class = "controls bp4-card bp4-elevation-3",
       div(
@@ -70,6 +51,11 @@ ui <- function(id) {
   )
 }
 
+#' Initialize the Shiny module server
+#'
+#' @param id The Shiny module ID
+#' @param data The input data for the module
+#'
 #' @export
 server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
@@ -108,7 +94,6 @@ server <- function(id, data) {
       country_filtered(subset(continent_filtered(), name_long == country_name()))
     })
     
-    
     observeEvent(country_filtered(), {
       plot$server(
         "plot1",
@@ -130,4 +115,16 @@ server <- function(id, data) {
       )
     })
   })
+}
+
+#' Set input value for Shiny module
+#'
+#' @param inputId The input ID
+#' @param accessor The accessor for the input value
+#'
+#' @return JavaScript code for setting Shiny input value
+#'
+#' @export
+setInput <- function(inputId, accessor = NULL) {
+  JS(paste0("x => Shiny.setInputValue('", inputId, "', x", accessor, ")"))
 }

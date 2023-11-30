@@ -9,6 +9,8 @@ box::use(
   imola[gridPanel]
 )
 
+box::use(app/logic/datasets[dashboard_intro, dataset_info])
+
 choices = c("Asia",
             "Africa",
             "Europe",
@@ -17,42 +19,17 @@ choices = c("Asia",
             "South America",
             "Antarctica")
 
-
-
 setInput <- function(inputId, accessor = NULL) {
   JS(paste0("x => Shiny.setInputValue('", inputId, "', x", accessor, ")"))
 }
 
+#' Initialize the Shiny module UI for the World Health Dashboard Intro
+#'
+#' @param id The Shiny module ID
+#'
 #' @export
 ui <- function(id) {
   ns <- NS(id)
-  
-  div(tags$head(tags$style(
-    HTML(
-      '* {font-family: "Maven Pro", sans-serif; font-weight: 400;}
-           .leaflet-container {border-radius: 10px;}
-        .no-data {font-size: 16px;}
-        .no-data-container {display: flex; justify-content: center;}
-        .leaflet-top {z-index: 0}
-        .leaflet-control {z-index: 0}
-        div.leaflet-top.leaflet-right {z-index: 0}
-        .homepage {display: flex; background: #F8F8FF; flex-direction: row; border-radius: 10px;}
-        .sidebar-control {width: 30%; margin-right: 10px;}
-        .sidebar-content {min-height: 782.57px;}
-        .main-content {width: 70%;}
-        .year-continent {display: flex}
-        .continent-control {margin-left: 10px}
-        .year-control {margin-right: 10px}
-        .world-bank-link > .bp4-button {margin-bottom: 11.380px}
-        @media (max-width: 991px) {
-        .homepage {
-        flex-direction: column;}
-        .sidebar-control {width: 100%; margin-bottom: 10px;}
-        .sidebar-content {min-height: auto}
-        .main-content {width:100%;}
-}'
-    )
-  )),
   div(
     class = "homepage",
     div(
@@ -60,15 +37,11 @@ ui <- function(id) {
       div(
         class = "sidebar-content",
         h2("About"),
-        h3(
-          "In the wake of the global pandemic, COVID-19, the importance of maintaining impeccable hygiene and sanitation practices has never been more apparent. The World Health Dashboard serves as a powerful testament to the profound impact that these simple yet critical practices can have on the overall health and well-being of the world population over time. Join on this journey as we explore the tangible evidence that proper hygiene and sanitary practices are not just the first line of defense against pandemics, but also the foundation upon which a resilient, thriving society is built. The World Health Dashboard is your window into the transformative impact of these practices, demonstrating the path towards a healthier tomorrow."
-        ),
+        h3(dashboard_intro),  # <-- Added Roxygen2 tag for the dataset intro
         Divider(),
         div(
           h2("Dataset Info"),
-          h3(
-            "The dataset used in this dashboard is a part of the World Development Indicators (WDI), which is the primary World Bank collection of development indicators, compiled from officially-recognized international sources. It presents the most current and accurate global development data available, and includes national, regional and global estimates."
-          ),
+          h3(dataset_info),  # <-- Added Roxygen2 tag for the dataset info
           tags$a(
             class = "world-bank-link",
             style = "text-decoration:none",
@@ -80,23 +53,23 @@ ui <- function(id) {
         Divider(),
         div(
           class = "year-continent",
-        div(
-          class = "year-control",
-          h3("Select year"),
-        HTMLSelect.shinyInput(
-          class = "bp4-large",
-          inputId = ns("year"),
-          options = 1998:2022,
-          value = 2021
-        )),
-        div(
-          class = "continent-control",
-        h3("Select continent"),
-        HTMLSelect(
-          class = "bp4-large",
-          onChange = setInput(ns("continent"), ".target.value"),
-          options = choices
-        ))),
+          div(
+            class = "year-control",
+            h3("Select year"),
+            HTMLSelect.shinyInput(
+              class = "bp4-large",
+              inputId = ns("year"),
+              options = 1998:2022,
+              value = 2021
+            )),
+          div(
+            class = "continent-control",
+            h3("Select continent"),
+            HTMLSelect(
+              class = "bp4-large",
+              onChange = setInput(ns("continent"), ".target.value"),
+              options = choices
+            ))),
         
         h3("Select parameter"),
         uiOutput(ns("input_parameter"))
@@ -104,9 +77,15 @@ ui <- function(id) {
     div(class = "main-content", Card(class = "bp4-elevation-3", uiOutput(ns(
       "map"
     ))))
-  ))
+  )
 }
 
+#' Initialize the Shiny module server for the World Health Dashboard Intro
+#'
+#' @param id The Shiny module ID
+#' @param data The input data for the module
+#' @param continent_location The location data for continents
+#'
 #' @export
 server <- function(id, data, continent_location) {
   moduleServer(id, function(input, output, session) {
@@ -121,7 +100,6 @@ server <- function(id, data, continent_location) {
         value = parameter[2]
       )
     })
-    
     
     continent_filtered <- reactive({
       continent_name <-
